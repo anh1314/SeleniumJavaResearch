@@ -1,2 +1,2 @@
 # Update
-update CaptchaHelper, JsonHelpper, DataProviderFactory_Json, jsonData, tcs in Example
+update CaptchaHelper, JsonHelper, DataProviderFactory_Json, jsonData, tcs in Example
