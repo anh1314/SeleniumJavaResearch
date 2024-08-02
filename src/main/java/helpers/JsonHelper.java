@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.gson.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import utils.LogUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,29 +21,75 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class JsonHelper {
-    private static JsonNode rootNode;
+private JSONObject jsonObject;
 
-    //🍀🍀 Set Json file path
-    public void setJsonFile(String JsonPath) {
-        try {
-            // Đọc toàn bộ nội dung của file vào một chuỗi
-            byte[] jsonData = Files.readAllBytes(Paths.get(JsonPath));
-            // Sử dụng ObjectMapper để phân tích chuỗi JSON
-            ObjectMapper objectMapper = new ObjectMapper();
-            rootNode = objectMapper.readTree(jsonData);
+    //🍀🍀 Đọc file JSON từ đường dẫn
+    public void setJsonFile(String jsonPath) {
+        try (FileInputStream fis = new FileInputStream(jsonPath)) {
+            JSONTokener tokener = new JSONTokener(fis);
+            jsonObject = new JSONObject(tokener);
         } catch (IOException e) {
             e.printStackTrace();
-            rootNode = null;
         }
     }
 
-    //🍀🍀 Get Json VALUE by KEY
+    //🍀🍀 Lấy giá trị từ key trong JSON
     public String getJsonValue(String key) {
-        if (rootNode == null) {
-            return null;
+        return getJsonValueFromObject(jsonObject, key);
+    }
+
+    //🍀🍀 Lấy giá trị từ key trong JSON lồng nhau với keyArray
+    public String getJsonValueNestObject(String keyArray, String key) {
+        if (jsonObject.has(keyArray)) {
+            JSONObject nestedObject = jsonObject.getJSONObject(keyArray);
+            return getJsonValueFromObject(nestedObject, key);
         }
-        JsonNode valueNode = rootNode.path(key);
-        return valueNode.asText();
+        return null;
+    }
+
+    //🍀🍀 Lấy giá trị từ key trong mảng JSON với chỉ số dòng
+    public String getJsonValueObjectArray(int rowIndex, String key) {
+        rowIndex -= 1;
+        for (String arrayKey : jsonObject.keySet()) {
+            Object value = jsonObject.get(arrayKey);
+            if (value instanceof JSONArray) {
+                JSONArray array = (JSONArray) value;
+                if (rowIndex >= 0 && rowIndex < array.length()) {
+                    JSONObject rowObject = array.getJSONObject(rowIndex);
+                    return getJsonValueFromObject(rowObject, key);
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getJsonValueFromObject(JSONObject jsonObject, String key) {
+        if (jsonObject.has(key)) {
+            return jsonObject.get(key).toString();
+        }
+
+        // Kiểm tra các object lồng nhau
+        for (String nestedKey : jsonObject.keySet()) {
+            Object value = jsonObject.get(nestedKey);
+            if (value instanceof JSONObject) {
+                String result = getJsonValueFromObject((JSONObject) value, key);
+                if (result != null) {
+                    return result;
+                }
+            } else if (value instanceof JSONArray) {
+                JSONArray array = (JSONArray) value;
+                for (int i = 0; i < array.length(); i++) {
+                    Object arrayItem = array.get(i);
+                    if (arrayItem instanceof JSONObject) {
+                        String result = getJsonValueFromObject((JSONObject) arrayItem, key);
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 //    🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒🍒
