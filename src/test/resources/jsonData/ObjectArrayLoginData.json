@@ -1,9 +1,0 @@
-{
-   "LoginFail": [
-      {"case 1": "Invalid email",  "email": "admin123@example.com", "password":  123456},
-      {"case 2": "Invalid password", "email": "admin@example.com", "password": 123 },
-      {"case 3": "Null email", "email": "", "password": 123456 },
-      {"case 4": "Null password", "email":  "customer@example.com", "password": ""},
-      {"case 5": "Incorrect format email", "email":  "customer", "password": 123456}
-   ]
-}
