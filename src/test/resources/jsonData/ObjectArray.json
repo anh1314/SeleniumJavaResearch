@@ -1,7 +1,0 @@
-{
-   "usersLogin": [
-      { "id": 1,  "email": "admin@example.com", "password":  123456},
-      { "id": 2,  "email": "bob@example.com", "password": 123 },
-      { "id": 3, "email": "admin", "password": 123456 },
-      {"id": 4, "email":  "customer@example.com", "password": 123456}
-   ]}
